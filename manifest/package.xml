@@ -5,7 +5,9 @@
         <name>ApexClass</name>
     </types>
     <types>
+        <members>orderProducts</members>
         <members>utility</members>
+        <members>wrapperComponent</members>
         <name>LightningComponentBundle</name>
     </types>
     <version>54.0</version>

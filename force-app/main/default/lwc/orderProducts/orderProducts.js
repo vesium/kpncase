@@ -14,7 +14,7 @@ const COLUMNS = [
     {label: 'Total Price', fieldName: 'TotalPrice', type: 'currency'},
 ]
 
-export default class OrderProduct extends LightningElement {
+export default class OrderProducts extends LightningElement {
 
     @api recordId;
     columns = COLUMNS;
