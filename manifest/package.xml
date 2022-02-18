@@ -4,5 +4,9 @@
         <members>OrderProductController</members>
         <name>ApexClass</name>
     </types>
+    <types>
+        <members>utility</members>
+        <name>LightningComponentBundle</name>
+    </types>
     <version>54.0</version>
 </Package>
