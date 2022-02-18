@@ -5,14 +5,21 @@
 <!-- Order Product -->
 <template>
 
-    <lightning-card title="Order Products" icon-name="standard:order_item">
-        <lightning-button label="Activate" onclick={handleActivate} slot="actions"></lightning-button>
-        <div class="slds-p-horizontal_small" style="height: 250px;">
-            <lightning-datatable
-                    key-field="id"
-                    data={orderItems}
-                    columns={columns}>
-            </lightning-datatable>
-        </div>
-    </lightning-card>
+    <div class="slds-is-relative">
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+        </template>
+
+        <lightning-card title="Order Products" icon-name="standard:order_item">
+            <lightning-button label="Activate" onclick={handleActivate} slot="actions"></lightning-button>
+            <div class="slds-p-horizontal_small" style="height: 250px;">
+                <lightning-datatable
+                        key-field="id"
+                        data={orderItems}
+                        columns={columns}>
+                </lightning-datatable>
+            </div>
+        </lightning-card>
+    </div>
+
 </template>
