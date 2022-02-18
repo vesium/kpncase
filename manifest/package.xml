@@ -2,12 +2,14 @@
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
         <members>OrderProductController</members>
+        <members>AvailableProductsController</members>
         <name>ApexClass</name>
     </types>
     <types>
         <members>orderProducts</members>
         <members>utility</members>
         <members>wrapperComponent</members>
+        <members>availableProducts</members>
         <name>LightningComponentBundle</name>
     </types>
     <version>54.0</version>

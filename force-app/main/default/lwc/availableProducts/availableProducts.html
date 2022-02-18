@@ -1,0 +1,25 @@
+<!--
+ - Created by Omer on 18/02/2022.
+ -->
+
+<!-- Available Products -->
+<template>
+
+    <div class="slds-is-relative">
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+        </template>
+
+        <lightning-card title="Available Products" icon-name="standard:order_item">
+            <div class="slds-p-horizontal_small" style="height: 250px;">
+                <lightning-datatable
+                        key-field="id"
+                        data={productList}
+                        columns={columns}>
+                </lightning-datatable>
+            </div>
+        </lightning-card>
+    </div>
+
+
+</template>
