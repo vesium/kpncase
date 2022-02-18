@@ -1,0 +1,18 @@
+<!--
+ - Created by Omer on 18/02/2022.
+ -->
+
+<!-- Order Product -->
+<template>
+
+    <lightning-card title="Order Products" icon-name="standard:order_item">
+        <lightning-button label="Activate" onclick={handleActivate} slot="actions"></lightning-button>
+        <div class="slds-p-horizontal_small" style="height: 250px;">
+            <lightning-datatable
+                    key-field="id"
+                    data={orderItems}
+                    columns={columns}>
+            </lightning-datatable>
+        </div>
+    </lightning-card>
+</template>
