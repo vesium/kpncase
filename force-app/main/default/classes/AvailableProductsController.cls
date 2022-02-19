@@ -52,6 +52,27 @@ public with sharing class AvailableProductsController {
 
     }
 
+    @AuraEnabled
+    public static Boolean checkPriceBookSelectionAvailable(Id orderId) {
+        Order orderRecord = [SELECT Id,Pricebook2Id FROM Order WHERE Id = :orderId];
+        return orderRecord.Pricebook2Id == null;
+    }
+
+    @AuraEnabled
+    public static List<Pricebook2> getPriceBooks() {
+        return [
+                SELECT Id,Name
+                FROM Pricebook2
+                WHERE IsActive = TRUE
+        ];
+    }
+
+    @AuraEnabled
+    public static void setPriceBook(Id orderId, Id selectedPriceBook2Id) {
+        Order order = new Order(Id = orderId, Pricebook2Id = selectedPriceBook2Id);
+        update order;
+    }
+
     class ProductSearchRequestModel {
         @AuraEnabled public Id orderId { get; set; }
         @AuraEnabled public String searchTerm { get; set; } // TODO

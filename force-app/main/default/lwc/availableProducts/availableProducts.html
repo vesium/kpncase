@@ -10,14 +10,59 @@
             <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
         </template>
 
-        <lightning-card title="Available Products" icon-name="standard:order_item">
-            <div class="slds-p-horizontal_small" style="height: 250px;">
-                <lightning-datatable
-                        key-field="id"
-                        data={productList}
-                        columns={columns}>
-                </lightning-datatable>
-            </div>
+        <lightning-card title="Available Products" icon-name="standard:product_item">
+
+            <template if:false={showProductListButton}>
+                <lightning-button label="Show Product List" slot="actions" onclick={handleShowProductList}>
+                </lightning-button>
+            </template>
+
+            <template if:true={showProductListButton}>
+                <lightning-button label="Hide Product List" slot="actions" onclick={handleHideProductList}>
+                </lightning-button>
+            </template>
+
+            <template if:true={showPriceBookSelectionLayout}>
+                <lightning-layout multiple-rows="true" class=slds-p-left_small>
+                    <lightning-layout-item size=12 small-device-size=9 medium-device-size=9
+                                           large-device-size=9>
+                        <lightning-combobox
+                                name="Price Book"
+                                label="Price Book"
+                                value={selectedPriceBookId}
+                                placeholder="Select Price Book"
+                                options={pricebookOptions}
+                                onchange={handlePriceBookChange}></lightning-combobox>
+                    </lightning-layout-item>
+                    <lightning-layout-item size=3 class="slds-p-left_small slds-p-top_large" small-device-size=3
+                                           medium-device-size=3
+                                           large-device-size=3>
+                        <lightning-button
+                                label="Save"
+                                icon-name="utility:save"
+                                icon-position="left"
+                                disabled={priceBookSaveButtonDisabled}
+                                onclick={handleSavePriceBookChange}>
+                        </lightning-button>
+                    </lightning-layout-item>
+                </lightning-layout>
+
+
+            </template>
+
+
+            <template if:true={showProductListButton}>
+                <template if:true={showProductListDataTable}>
+                    <div class="slds-p-horizontal_small slds-m-top_small" style="height: 250px;">
+                        <lightning-datatable
+                                key-field="id"
+                                data={productList}
+                                columns={columns}>
+                        </lightning-datatable>
+                    </div>
+                </template>
+            </template>
+
         </lightning-card>
     </div>
 
