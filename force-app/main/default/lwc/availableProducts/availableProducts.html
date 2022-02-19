@@ -60,8 +60,9 @@
                             <lightning-button
                                     label="Add Product"
                                     disabled={addProductButtonDisabled}
-                                    onclick={handleAddProduct}>
-
+                                    onclick={handleAddProduct}
+                                    class={addProductButtonClass}
+                            >
                             </lightning-button>
                         </lightning-layout-item>
                         <lightning-layout-item size=12 small-device-size=12
@@ -71,6 +72,8 @@
                                         key-field="id"
                                         data={productList}
                                         columns={columns}
+                                        max-row-selection=2000
+                                        hide-checkbox-column={hideCheckBoxColumn}
                                         onrowselection={handleRowSelection}>
                                 </lightning-datatable>
                             </div>

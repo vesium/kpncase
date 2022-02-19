@@ -53,9 +53,12 @@ public with sharing class AvailableProductsController {
     }
 
     @AuraEnabled
-    public static Boolean checkPriceBookSelectionAvailable(Id orderId) {
-        Order orderRecord = [SELECT Id,Pricebook2Id FROM Order WHERE Id = :orderId];
-        return orderRecord.Pricebook2Id == null;
+    public static Order getOrder(Id orderId) {
+        return [
+                SELECT Id,Pricebook2Id,Status
+                FROM Order
+                WHERE Id = :orderId
+        ];
     }
 
     @AuraEnabled

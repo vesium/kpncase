@@ -5,8 +5,8 @@
 import {api, LightningElement, track, wire} from 'lwc';
 import getAvailableProducts from '@salesforce/apex/AvailableProductsController.getAvailableProducts';
 import getPriceBooks from '@salesforce/apex/AvailableProductsController.getPriceBooks';
-import checkPriceBookSelectionAvailable
-    from '@salesforce/apex/AvailableProductsController.checkPriceBookSelectionAvailable';
+import getOrder
+    from '@salesforce/apex/AvailableProductsController.getOrder';
 import setPriceBook from '@salesforce/apex/AvailableProductsController.setPriceBook';
 import updateOrderItems from '@salesforce/apex/AvailableProductsController.updateOrderItems';
 import {getErrorMessage} from "c/utility";
@@ -28,6 +28,7 @@ export default class AvailableProducts extends LightningElement {
     pricebookOptions = [];
     selectedPriceBookId = null;
     selectedRows = [];
+    order;
 
     isPriceBookSelectionAvailable = false;
     showProductListButton = false;
@@ -41,16 +42,25 @@ export default class AvailableProducts extends LightningElement {
         return this.selectedPriceBookId === null;
     }
 
+    get hideCheckBoxColumn() {
+        return this.order.Status === 'Activated';
+    }
+
+    get addProductButtonClass() {
+        return this.order.Status === 'Activated' ? 'slds-hide' : '';
+    }
+
     get addProductButtonDisabled() {
         return this.selectedRows.length === 0;
     }
 
     handleShowProductList() {
         this.isLoading = true;
-        checkPriceBookSelectionAvailable({
+        getOrder({
             orderId: this.recordId
-        }).then(isPriceBookSelectionAvailable => {
-            this.isPriceBookSelectionAvailable = isPriceBookSelectionAvailable;
+        }).then(order => {
+            this.order = order;
+            this.isPriceBookSelectionAvailable = this.order.Pricebook2Id === null;
             if (this.isPriceBookSelectionAvailable === false) {
                 // Get Available Products
                 return getAvailableProducts({
