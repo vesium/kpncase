@@ -12,7 +12,7 @@ import updateOrderItems from '@salesforce/apex/AvailableProductsController.updat
 import {getErrorMessage} from "c/utility";
 import {ShowToastEvent} from "lightning/platformShowToastEvent";
 import {publish, MessageContext} from 'lightning/messageService';
-import OrderItemUpdate_CHANNEL from '@salesforce/messageChannel/OrderItemUpdate__c';
+import ORDER_ITEM_UPSERT_CHANNEL from '@salesforce/messageChannel/OrderItemUpsert__c';
 
 const COLUMNS = [
     {label: 'Name', fieldName: 'Name', cellAttributes: {alignment: 'left'}},
@@ -126,7 +126,7 @@ export default class AvailableProducts extends LightningElement {
             this.selectedRows = [];
             this.template.querySelector('lightning-datatable').selectedRows = [];
             const payload = {};
-            publish(this.messageContext, OrderItemUpdate_CHANNEL, payload);
+            publish(this.messageContext, ORDER_ITEM_UPSERT_CHANNEL, payload);
         }).catch(error => {
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({

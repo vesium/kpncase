@@ -7,7 +7,7 @@ import getOrderItems from '@salesforce/apex/OrderProductController.getOrderItems
 import {getErrorMessage} from "c/utility";
 import {ShowToastEvent} from "lightning/platformShowToastEvent";
 import {subscribe, MessageContext} from 'lightning/messageService';
-import ORDER_ITEM_UPDATE_CHANNEL from '@salesforce/messageChannel/OrderItemUpdate__c';
+import ORDER_ITEM_UPSERT_CHANNEL from '@salesforce/messageChannel/OrderItemUpsert__c';
 
 const COLUMNS = [
     {label: 'Name', fieldName: 'ProductName', cellAttributes: {alignment: 'left'}},
@@ -30,7 +30,7 @@ export default class OrderProducts extends LightningElement {
     subscribeToMessageChannel() {
         this.subscription = subscribe(
             this.messageContext,
-            ORDER_ITEM_UPDATE_CHANNEL,
+            ORDER_ITEM_UPSERT_CHANNEL,
             (message) => this.handleMessage(message)
         );
     }
