@@ -68,6 +68,43 @@ public with sharing class AvailableProductsController {
     }
 
     @AuraEnabled
+    public static void updateOrderItems(Id orderId, List<PricebookEntry> selectedRows) {
+
+        Map<Id, OrderItem> productToOrderItemMap = new Map<Id, OrderItem>();
+        List<OrderItem> orderItemsToUpsert = new List<OrderItem>();
+
+        List<OrderItem> orderItems = [
+                SELECT Id,Product2Id,Quantity
+                FROM OrderItem
+                WHERE OrderId = :orderId
+        ];
+        if (!orderItems.isEmpty()) {
+            for (OrderItem orderItem : orderItems) {
+                productToOrderItemMap.put(orderItem.Product2Id, orderItem);
+            }
+        }
+
+        for (PricebookEntry pricebookEntry : selectedRows) {
+            OrderItem orderItem = productToOrderItemMap.get(pricebookEntry.Product2Id);
+            if (orderItem == null) {
+                orderItem = new OrderItem();
+                orderItem.OrderId = orderId;
+                orderItem.UnitPrice = pricebookEntry.UnitPrice;
+                orderItem.PricebookEntryId = pricebookEntry.Id;
+                orderItem.Quantity = 1;
+            } else {
+                orderItem.Quantity++;
+            }
+            orderItemsToUpsert.add(orderItem);
+        }
+        if (!orderItemsToUpsert.isEmpty()) {
+            upsert orderItemsToUpsert;
+        }
+
+
+    }
+
+    @AuraEnabled
     public static void setPriceBook(Id orderId, Id selectedPriceBook2Id) {
         Order order = new Order(Id = orderId, Pricebook2Id = selectedPriceBook2Id);
         update order;

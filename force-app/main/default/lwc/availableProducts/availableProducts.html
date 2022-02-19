@@ -53,13 +53,31 @@
 
             <template if:true={showProductListButton}>
                 <template if:true={showProductListDataTable}>
-                    <div class="slds-p-horizontal_small slds-m-top_small" style="height: 250px;">
-                        <lightning-datatable
-                                key-field="id"
-                                data={productList}
-                                columns={columns}>
-                        </lightning-datatable>
-                    </div>
+
+                    <lightning-layout multiple-rows="false">
+                        <lightning-layout-item size=12 small-device-size=12
+                                               medium-device-size=12 large-device-size=12 class=slds-p-around_small>
+                            <lightning-button
+                                    label="Add Product"
+                                    disabled={addProductButtonDisabled}
+                                    onclick={handleAddProduct}>
+
+                            </lightning-button>
+                        </lightning-layout-item>
+                        <lightning-layout-item size=12 small-device-size=12
+                                               medium-device-size=12 large-device-size=12 class=slds-p-left_small>
+                            <div style="height: 250px;">
+                                <lightning-datatable
+                                        key-field="id"
+                                        data={productList}
+                                        columns={columns}
+                                        onrowselection={handleRowSelection}>
+                                </lightning-datatable>
+                            </div>
+                        </lightning-layout-item>
+                    </lightning-layout>
+
+
                 </template>
             </template>
 

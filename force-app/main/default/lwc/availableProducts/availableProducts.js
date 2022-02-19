@@ -2,13 +2,13 @@
  * Created by Omer on 18/02/2022.
  */
 
-import {api, LightningElement} from 'lwc';
-import getAvailableProducts from '@salesforce/apex/AvailableProductsController.getAvailableProducts'
-import getPriceBooks from '@salesforce/apex/AvailableProductsController.getPriceBooks'
+import {api, LightningElement, track} from 'lwc';
+import getAvailableProducts from '@salesforce/apex/AvailableProductsController.getAvailableProducts';
+import getPriceBooks from '@salesforce/apex/AvailableProductsController.getPriceBooks';
 import checkPriceBookSelectionAvailable
-    from '@salesforce/apex/AvailableProductsController.checkPriceBookSelectionAvailable'
-import setPriceBook
-    from '@salesforce/apex/AvailableProductsController.setPriceBook';
+    from '@salesforce/apex/AvailableProductsController.checkPriceBookSelectionAvailable';
+import setPriceBook from '@salesforce/apex/AvailableProductsController.setPriceBook';
+import updateOrderItems from '@salesforce/apex/AvailableProductsController.updateOrderItems';
 import {getErrorMessage} from "c/utility";
 import {ShowToastEvent} from "lightning/platformShowToastEvent";
 
@@ -25,6 +25,7 @@ export default class AvailableProducts extends LightningElement {
     productList = [];
     pricebookOptions = [];
     selectedPriceBookId = null;
+    selectedRows = [];
 
     isPriceBookSelectionAvailable = false;
     showProductListButton = false;
@@ -33,6 +34,10 @@ export default class AvailableProducts extends LightningElement {
 
     get priceBookSaveButtonDisabled() {
         return this.selectedPriceBookId === null;
+    }
+
+    get addProductButtonDisabled() {
+        return this.selectedRows.length === 0;
     }
 
     handleShowProductList() {
@@ -104,6 +109,35 @@ export default class AvailableProducts extends LightningElement {
         })
     }
 
+    handleAddProduct() {
+        this.isLoading = true;
+        this.selectedRows.forEach(item => {
+            delete item.isExistingOrderProduct;
+        });
+        updateOrderItems({
+            orderId: this.recordId,
+            selectedRows: this.selectedRows
+        }).then(data => {
+            this.selectedRows = [];
+            this.template.querySelector('lightning-datatable').selectedRows = [];
+            // TODO : Push Channel Message To
+        }).catch(error => {
+            const errorMessage = getErrorMessage(error);
+            this.dispatchEvent(new ShowToastEvent({
+                variant: 'error',
+                title: "Error",
+                message: errorMessage
+            }));
+        }).finally(() => {
+            this.isLoading = false;
+        })
+
+    }
+
+    handleRowSelection(event) {
+        this.selectedRows = event.detail.selectedRows;
+    }
+
     getAvailableProducts() {
         this.isLoading = true;
         getAvailableProducts({
@@ -130,6 +164,7 @@ export default class AvailableProducts extends LightningElement {
         this.productList = clone.map((item) => {
             return {
                 Id: item.pricebookEntry.Id,
+                Product2Id: item.pricebookEntry.Product2Id,
                 Name: item.pricebookEntry.Name,
                 UnitPrice: item.pricebookEntry.UnitPrice,
                 isExistingOrderProduct: item.isExistingOrderProduct
