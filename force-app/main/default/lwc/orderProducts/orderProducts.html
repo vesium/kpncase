@@ -11,11 +11,17 @@
         </template>
 
         <lightning-card title="Order Products" icon-name="standard:order_item">
-            <lightning-button label="Activate" onclick={handleActivate} slot="actions"></lightning-button>
+            <lightning-button
+                    label="Activate"
+                    onclick={handleActivate}
+                    slot="actions"
+                    disabled={activeButtonDisabled}>
+            </lightning-button>
             <div class="slds-p-horizontal_small" style="height: 250px;">
                 <lightning-datatable
                         key-field="id"
                         data={orderItems}
+                        hide-checkbox-column
                         columns={columns}>
                 </lightning-datatable>
             </div>

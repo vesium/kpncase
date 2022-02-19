@@ -4,10 +4,12 @@
 
 import {api, LightningElement, wire} from 'lwc';
 import getOrderItems from '@salesforce/apex/OrderProductController.getOrderItems'
+import activateOrder from '@salesforce/apex/OrderProductController.activateOrder'
 import {getErrorMessage} from "c/utility";
 import {ShowToastEvent} from "lightning/platformShowToastEvent";
 import {subscribe, MessageContext} from 'lightning/messageService';
 import ORDER_ITEM_UPSERT_CHANNEL from '@salesforce/messageChannel/OrderItemUpsert__c';
+import {getRecord} from 'lightning/uiRecordApi';
 
 const COLUMNS = [
     {label: 'Name', fieldName: 'ProductName', cellAttributes: {alignment: 'left'}},
@@ -16,6 +18,8 @@ const COLUMNS = [
     {label: 'Total Price', fieldName: 'TotalPrice', type: 'currency', cellAttributes: {alignment: 'left'}},
 ]
 
+const ORDER_FIELDS = ['Order.Status'];
+
 export default class OrderProducts extends LightningElement {
 
     @api recordId;
@@ -23,6 +27,24 @@ export default class OrderProducts extends LightningElement {
     isLoading = false;
     orderItems = [];
     subscription = null;
+    order;
+
+    @wire(getRecord, {recordId: '$recordId', fields: ORDER_FIELDS})
+    wiredRecord({error, data}) {
+        if (error) {
+            const errorMessage = getErrorMessage(error);
+            // TODO: Custom Label
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error loading order',
+                    errorMessage,
+                    variant: 'error',
+                }),
+            );
+        } else if (data) {
+            this.order = data;
+        }
+    }
 
     @wire(MessageContext)
     messageContext;
@@ -46,7 +68,27 @@ export default class OrderProducts extends LightningElement {
     }
 
     handleActivate() {
-        // TODO:
+        this.isLoading = true;
+        activateOrder({
+            orderId: this.recordId
+        }).then(data => {
+            eval("$A.get('e.force:refreshView').fire();");
+            this.dispatchEvent(new ShowToastEvent({
+                variant: 'success',
+                title: "Success",
+                message: "The order has been activated"
+            }));
+        }).catch(error => {
+            // TODO : Custom Label
+            const errorMessage = getErrorMessage(error);
+            this.dispatchEvent(new ShowToastEvent({
+                variant: 'error',
+                title: "Error",
+                message: errorMessage
+            }));
+        }).finally(() => {
+            this.isLoading = false;
+        })
     }
 
     getOrderItems() {
@@ -60,6 +102,7 @@ export default class OrderProducts extends LightningElement {
             });
             this.orderItems = clone;
         }).catch(error => {
+            // TODO : Custom Label
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
                 variant: 'error',
@@ -69,6 +112,10 @@ export default class OrderProducts extends LightningElement {
         }).finally(() => {
             this.isLoading = false;
         })
+    }
+
+    get activeButtonDisabled() {
+        return this?.order?.fields?.Status?.value === 'Activated';
     }
 
 

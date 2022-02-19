@@ -20,5 +20,20 @@ public with sharing class OrderProductController {
         return Database.query(query);
     }
 
+    @AuraEnabled
+    public static Order getOrder(Id orderId) {
+        return [
+                SELECT Id,Status
+                FROM Order
+                WHERE Id = :orderId
+        ];
+    }
+
+    @AuraEnabled
+    public static void activateOrder(Id orderId) {
+        Order order = new Order(Id = orderId, Status = 'Activated');
+        update order;
+    }
+
 
 }

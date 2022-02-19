@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>54.0</apiVersion>
-    <description>Order Product</description>
-    <masterLabel>Order Product</masterLabel>
+    <description>Order Products</description>
+    <masterLabel>Order Products</masterLabel>
     <isExposed>true</isExposed>
     <targets>
         <target>lightning__RecordPage</target>
