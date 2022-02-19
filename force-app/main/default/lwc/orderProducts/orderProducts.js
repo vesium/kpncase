@@ -6,6 +6,8 @@ import {api, LightningElement, wire} from 'lwc';
 import getOrderItems from '@salesforce/apex/OrderProductController.getOrderItems'
 import {getErrorMessage} from "c/utility";
 import {ShowToastEvent} from "lightning/platformShowToastEvent";
+import {subscribe, MessageContext} from 'lightning/messageService';
+import ORDER_ITEM_UPDATE_CHANNEL from '@salesforce/messageChannel/OrderItemUpdate__c';
 
 const COLUMNS = [
     {label: 'Name', fieldName: 'ProductName', cellAttributes: {alignment: 'left'}},
@@ -20,9 +22,26 @@ export default class OrderProducts extends LightningElement {
     columns = COLUMNS;
     isLoading = false;
     orderItems = [];
+    subscription = null;
 
+    @wire(MessageContext)
+    messageContext;
+
+    subscribeToMessageChannel() {
+        this.subscription = subscribe(
+            this.messageContext,
+            ORDER_ITEM_UPDATE_CHANNEL,
+            (message) => this.handleMessage(message)
+        );
+    }
 
     connectedCallback() {
+        this.subscribeToMessageChannel();
+        this.getOrderItems();
+    }
+
+    handleMessage(message) {
+        // message is not required - only the component will be refreshed, not all lightning page
         this.getOrderItems();
     }
 

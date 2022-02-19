@@ -2,7 +2,7 @@
  * Created by Omer on 18/02/2022.
  */
 
-import {api, LightningElement, track} from 'lwc';
+import {api, LightningElement, track, wire} from 'lwc';
 import getAvailableProducts from '@salesforce/apex/AvailableProductsController.getAvailableProducts';
 import getPriceBooks from '@salesforce/apex/AvailableProductsController.getPriceBooks';
 import checkPriceBookSelectionAvailable
@@ -11,6 +11,8 @@ import setPriceBook from '@salesforce/apex/AvailableProductsController.setPriceB
 import updateOrderItems from '@salesforce/apex/AvailableProductsController.updateOrderItems';
 import {getErrorMessage} from "c/utility";
 import {ShowToastEvent} from "lightning/platformShowToastEvent";
+import {publish, MessageContext} from 'lightning/messageService';
+import OrderItemUpdate_CHANNEL from '@salesforce/messageChannel/OrderItemUpdate__c';
 
 const COLUMNS = [
     {label: 'Name', fieldName: 'Name', cellAttributes: {alignment: 'left'}},
@@ -31,6 +33,9 @@ export default class AvailableProducts extends LightningElement {
     showProductListButton = false;
     showProductListDataTable = false;
     showPriceBookSelectionLayout = false;
+
+    @wire(MessageContext)
+    messageContext;
 
     get priceBookSaveButtonDisabled() {
         return this.selectedPriceBookId === null;
@@ -120,7 +125,8 @@ export default class AvailableProducts extends LightningElement {
         }).then(data => {
             this.selectedRows = [];
             this.template.querySelector('lightning-datatable').selectedRows = [];
-            // TODO : Push Channel Message To
+            const payload = {};
+            publish(this.messageContext, OrderItemUpdate_CHANNEL, payload);
         }).catch(error => {
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
@@ -131,7 +137,6 @@ export default class AvailableProducts extends LightningElement {
         }).finally(() => {
             this.isLoading = false;
         })
-
     }
 
     handleRowSelection(event) {
