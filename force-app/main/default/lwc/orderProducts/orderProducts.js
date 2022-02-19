@@ -8,10 +8,10 @@ import {getErrorMessage} from "c/utility";
 import {ShowToastEvent} from "lightning/platformShowToastEvent";
 
 const COLUMNS = [
-    {label: 'Name', fieldName: 'ProductName'},
-    {label: 'Unit Price', fieldName: 'UnitPrice', type: 'currency'},
-    {label: 'Quantity', fieldName: 'Quantity', type: 'number'},
-    {label: 'Total Price', fieldName: 'TotalPrice', type: 'currency'},
+    {label: 'Name', fieldName: 'ProductName', cellAttributes: {alignment: 'left'}},
+    {label: 'Unit Price', fieldName: 'UnitPrice', type: 'currency', cellAttributes: {alignment: 'left'}},
+    {label: 'Quantity', fieldName: 'Quantity', type: 'number', cellAttributes: {alignment: 'left'}},
+    {label: 'Total Price', fieldName: 'TotalPrice', type: 'currency', cellAttributes: {alignment: 'left'}},
 ]
 
 export default class OrderProducts extends LightningElement {
