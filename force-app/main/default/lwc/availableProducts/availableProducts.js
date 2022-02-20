@@ -29,6 +29,9 @@ export default class AvailableProducts extends LightningElement {
     selectedPriceBookId = null;
     selectedRows = [];
     order;
+    offset = 0;
+    loadMoreStatus = '';
+    totalRecordSize = null;
 
     isPriceBookSelectionAvailable = false;
     showProductListButton = false;
@@ -37,6 +40,14 @@ export default class AvailableProducts extends LightningElement {
 
     @wire(MessageContext)
     messageContext;
+
+    get cardLabel() {
+        if (this.totalRecordSize !== null) {
+            return `Available Products ( ${this.totalRecordSize} )`; // TODO : Custom Label
+        } else {
+            return "Available Products";
+        }
+    }
 
     get priceBookSaveButtonDisabled() {
         return this.selectedPriceBookId === null;
@@ -66,7 +77,8 @@ export default class AvailableProducts extends LightningElement {
                 return getAvailableProducts({
                     productSearchRequestModel: {
                         orderId: this.recordId,
-                        searchTerm: "" // TODO
+                        searchTerm: "", // TODO
+                        offset: this.offset
                     }
                 })
             } else {
@@ -106,7 +118,8 @@ export default class AvailableProducts extends LightningElement {
             return getAvailableProducts({
                 productSearchRequestModel: {
                     orderId: this.recordId,
-                    searchTerm: "" // TODO
+                    searchTerm: "", // TODO
+                    offset: this.offset
                 }
             })
         }).then(data => {
@@ -154,11 +167,13 @@ export default class AvailableProducts extends LightningElement {
     }
 
     getAvailableProducts() {
-        this.isLoading = true;
+        this.template.querySelector('lightning-datatable').isLoading = true;
+        this.loadMoreStatus = 'Loading...'; // TODO : Custom Label
         getAvailableProducts({
             productSearchRequestModel: {
                 orderId: this.recordId,
-                searchTerm: "" // TODO
+                searchTerm: "", // TODO,
+                offset: this.offset
             }
         }).then(data => {
             this.prepareProductList(data);
@@ -166,17 +181,20 @@ export default class AvailableProducts extends LightningElement {
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
                 variant: 'error',
-                title: "Error",
+                title: "Error", // TODO : Custom Label
                 message: errorMessage
             }));
         }).finally(() => {
-            this.isLoading = false;
+            this.template.querySelector('lightning-datatable').isLoading = false;
+            this.loadMoreStatus = '';
         })
     }
 
     prepareProductList(data) {
+        this.showProductListDataTable = true;
         const clone = JSON.parse(JSON.stringify(data));
-        this.productList = clone.map((item) => {
+        this.totalRecordSize = clone.totalRecordSize;
+        const newItems = clone.entries.map((item) => {
             return {
                 Id: item.pricebookEntry.Id,
                 Product2Id: item.pricebookEntry.Product2Id,
@@ -185,7 +203,11 @@ export default class AvailableProducts extends LightningElement {
                 isExistingOrderProduct: item.isExistingOrderProduct
             }
         });
-        this.showProductListDataTable = true;
+        if (this.productList.length > 0) {
+            this.productList = [...this.productList, ...newItems];
+        } else {
+            this.productList = newItems;
+        }
     }
 
     preparePricePriceBookOptions(data) {
@@ -200,6 +222,22 @@ export default class AvailableProducts extends LightningElement {
 
     handlePriceBookChange(event) {
         this.selectedPriceBookId = event.detail.value;
+    }
+
+    handleLoadMore(event) {
+        event.preventDefault();
+        if (this.productList.length === 2000) {
+            this.template.querySelector('lightning-datatable').enableInfiniteLoading = false;
+            this.loadMoreStatus = 'We currently do not support viewing more than 2000 records in a list'
+        } else {
+            this.offset = this.offset + 50; // TODO:
+            if (this.totalRecordSize === this.productList.length) {
+                this.template.querySelector('lightning-datatable').enableInfiniteLoading = false;
+                this.loadMoreStatus = 'No data to load more'
+            } else {
+                this.getAvailableProducts();
+            }
+        }
     }
 
 }

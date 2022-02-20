@@ -10,7 +10,7 @@
             <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
         </template>
 
-        <lightning-card title="Available Products" icon-name="standard:product_item">
+        <lightning-card title={cardLabel} icon-name="standard:product_item">
 
             <template if:false={showProductListButton}>
                 <lightning-button label="Show Product List" slot="actions" onclick={handleShowProductList}>
@@ -73,11 +73,21 @@
                                         data={productList}
                                         columns={columns}
                                         max-row-selection=2000
+                                        onloadmore={handleLoadMore}
+                                        enable-infinite-loading
+                                        show-row-number-column
                                         hide-checkbox-column={hideCheckBoxColumn}
                                         onrowselection={handleRowSelection}>
                                 </lightning-datatable>
                             </div>
                         </lightning-layout-item>
+
+                        <lightning-layout-item size=12 small-device-size=12
+                                               medium-device-size=12 large-device-size=12
+                                               class="slds-p-around_small slds-text-align_center">
+                            {loadMoreStatus}
+                        </lightning-layout-item>
+
                     </lightning-layout>
 
 
