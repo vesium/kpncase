@@ -31,8 +31,17 @@ public with sharing class OrderProductController {
 
     @AuraEnabled
     public static void activateOrder(Id orderId) {
-        Order order = new Order(Id = orderId, Status = 'Activated');
-        update order;
+        OrderService.OrderServiceIntegrationResult orderServiceIntegrationResult = OrderService.sendOrderToExternalSystem(orderId);
+        Order order = new Order(Id = orderId);
+        if (orderServiceIntegrationResult.isSuccess) {
+            order.Status = 'Activated';
+            order.IntegrationStatus__c = 'Success';
+            update order;
+        } else {
+            order.IntegrationStatus__c = 'Fail';
+            update order;
+            throw new AuraHandledException(orderServiceIntegrationResult.message);
+        }
     }
 
 
