@@ -8,25 +8,12 @@ private class AvailableProductsControllerTest {
     @TestSetup
     static void setup() {
 
-        Account account = new Account();
-        account.Name = 'Test Account';
-        insert account;
+        List<Account> accounts = TestDataFactory.createAccount(true, 1);
+        Account account = accounts.get(0);
+        List<Product2> products = TestDataFactory.createProduct(true, 1);
+        Product2 product = products.get(0);
 
-        Product2 product = new Product2();
-        product.Name = 'Test Product';
-        product.ProductCode = '000';
-        insert product;
-
-        Pricebook2 standardPricebook2 = new Pricebook2(Id = Test.getStandardPricebookId());
-        standardPricebook2.IsActive = true;
-        update standardPricebook2;
-
-        Pricebook2 customPriceBook = new Pricebook2();
-        customPriceBook.Name = 'Custom Price Book';
-        customPriceBook.IsActive = true;
-        insert customPriceBook;
-
-
+        TestDataFactory.activateStandardPriceBook();
         PricebookEntry pricebookEntryForStandardPriceBook = new PricebookEntry();
         pricebookEntryForStandardPriceBook.Product2Id = product.Id;
         pricebookEntryForStandardPriceBook.Pricebook2Id = Test.getStandardPricebookId();
@@ -34,6 +21,8 @@ private class AvailableProductsControllerTest {
         pricebookEntryForStandardPriceBook.IsActive = true;
         insert pricebookEntryForStandardPriceBook;
 
+        List<Pricebook2> priceBooks = TestDataFactory.createPriceBooks(true, 1);
+        Pricebook2 customPriceBook = priceBooks.get(0);
         PricebookEntry pricebookEntryForCustomPriceBook = new PricebookEntry();
         pricebookEntryForCustomPriceBook.Product2Id = product.Id;
         pricebookEntryForCustomPriceBook.Pricebook2Id = customPriceBook.Id;
@@ -82,7 +71,7 @@ private class AvailableProductsControllerTest {
     static void testUpdateOrderItems() {
 
         Account account = [SELECT Id FROM Account LIMIT 1];
-        Pricebook2 customPriceBook = [SELECT Id FROM Pricebook2 WHERE Name = 'Custom Price Book'];
+        Pricebook2 customPriceBook = [SELECT Id FROM Pricebook2 WHERE IsStandard = FALSE];
         Order order = new Order();
         order.AccountId = account.Id;
         order.Status = 'Draft';
@@ -125,7 +114,7 @@ private class AvailableProductsControllerTest {
     @IsTest
     static void testSetPriceBook() {
         Account account = [SELECT Id FROM Account LIMIT 1];
-        Pricebook2 customPricebook = [SELECT Id FROM Pricebook2 WHERE Name = 'Custom Price Book'];
+        Pricebook2 customPricebook = [SELECT Id FROM Pricebook2 WHERE IsStandard = FALSE];
         Order order = new Order();
         order.AccountId = account.Id;
         order.Status = 'Draft';
