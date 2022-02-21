@@ -38,7 +38,7 @@ public with sharing class OrderProductController {
         orderActivationResult.message = orderServiceIntegrationResult.message;
         orderActivationResult.isSuccess = orderServiceIntegrationResult.isSuccess;
         if (orderActivationResult.isSuccess) {
-            orderActivationResult.message = 'The order has been activated';
+            orderActivationResult.message = System.Label.OrderActivationIntegrationSuccessMessage;
         }
 
         Order order = new Order(Id = orderId);

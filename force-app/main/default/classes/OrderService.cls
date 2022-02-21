@@ -50,9 +50,8 @@ public with sharing class OrderService {
 
             if (httpResponse.getStatusCode() == 200) {
                 integrationResult.isSuccess = true;
-                integrationResult.message = 'Integration has been completed successfully!';
             } else {
-                String errorMessage = 'An error has occurred while sending the order.';
+                String errorMessage = System.Label.OrderActivationIntegrationFailMessage;
                 throw new OrderServiceWebServiceException(errorMessage);
             }
 

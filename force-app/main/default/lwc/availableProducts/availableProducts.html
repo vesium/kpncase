@@ -13,12 +13,12 @@
         <lightning-card title={cardLabel} icon-name="standard:product_item">
 
             <template if:false={showProductListButton}>
-                <lightning-button label="Show Product List" slot="actions" onclick={handleShowProductList}>
+                <lightning-button label={showProductListButtonLabel} slot="actions" onclick={handleShowProductList}>
                 </lightning-button>
             </template>
 
             <template if:true={showProductListButton}>
-                <lightning-button label="Hide Product List" slot="actions" onclick={handleHideProductList}>
+                <lightning-button label={hideProductListButtonLabel} slot="actions" onclick={handleHideProductList}>
                 </lightning-button>
             </template>
 
@@ -58,7 +58,7 @@
                         <lightning-layout-item size=12 small-device-size=12
                                                medium-device-size=12 large-device-size=12 class=slds-p-around_small>
                             <lightning-button
-                                    label="Add Product"
+                                    label={addProductButtonLabel}
                                     disabled={addProductButtonDisabled}
                                     onclick={handleAddProduct}
                                     class={addProductButtonClass}

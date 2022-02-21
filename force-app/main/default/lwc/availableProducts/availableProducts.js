@@ -14,9 +14,30 @@ import {ShowToastEvent} from "lightning/platformShowToastEvent";
 import {publish, MessageContext} from 'lightning/messageService';
 import ORDER_ITEM_UPSERT_CHANNEL from '@salesforce/messageChannel/OrderItemUpsert__c';
 
+import ADD_PRODUCT_BUTTON_LABEL from '@salesforce/label/c.AvailableProductsAddProductButtonLabel';
+import HIDE_PRODUCT_LIST_BUTTON_LABEL from '@salesforce/label/c.AvailableProductsHideProductListButtonLabel';
+import SHOW_PRODUCT_LIST_BUTTON_LABEL from '@salesforce/label/c.AvailableProductsShowProductListButtonLabel';
+import LIST_PRICE_FIELD_LABEL from '@salesforce/label/c.AvailableProductsListPriceColumnName';
+import NAME_FIELD_LABEL from '@salesforce/label/c.AvailableProductsProductNameColumnName';
+import CARD_TITLE from '@salesforce/label/c.AvailableProductsCardLabel';
+import SUCCESS_MESSAGE_TITLE from '@salesforce/label/c.ShowToastEventSuccessMessageTitle';
+import FAIL_MESSAGE_TITLE from '@salesforce/label/c.ShowToastEventFailMessageTitle';
+import LOADING_LABEL from '@salesforce/label/c.OrderProductsSpinnerLoadingLabel';
+
+
 const COLUMNS = [
-    {label: 'Name', fieldName: 'Name', cellAttributes: {alignment: 'left'}},
-    {label: 'List Price', fieldName: 'UnitPrice', type: 'currency', cellAttributes: {alignment: 'left'}},
+    {
+        label: NAME_FIELD_LABEL,
+        fieldName: 'Name',
+        type: 'text',
+        cellAttributes: {alignment: 'left'}
+    },
+    {
+        label: LIST_PRICE_FIELD_LABEL,
+        fieldName: 'UnitPrice',
+        type: 'currency',
+        cellAttributes: {alignment: 'left'}
+    },
 ]
 const RECORD_LIMIT = 10;
 
@@ -33,6 +54,9 @@ export default class AvailableProducts extends LightningElement {
     loadMoreStatus = '';
     totalRecordSize = null;
     showedProductIds = [];
+    addProductButtonLabel = ADD_PRODUCT_BUTTON_LABEL;
+    showProductListButtonLabel = SHOW_PRODUCT_LIST_BUTTON_LABEL;
+    hideProductListButtonLabel = HIDE_PRODUCT_LIST_BUTTON_LABEL;
 
     isPriceBookSelectionAvailable = false;
     showProductListButton = false;
@@ -44,9 +68,9 @@ export default class AvailableProducts extends LightningElement {
 
     get cardLabel() {
         if (this.totalRecordSize !== null) {
-            return `Available Products ( ${this.totalRecordSize} )`; // TODO : Custom Label
+            return `${CARD_TITLE} ( ${this.totalRecordSize} )`;
         } else {
-            return "Available Products";
+            return `${CARD_TITLE}`;
         }
     }
 
@@ -96,7 +120,7 @@ export default class AvailableProducts extends LightningElement {
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
                 variant: 'error',
-                title: "Error",
+                title: FAIL_MESSAGE_TITLE,
                 message: errorMessage
             }));
         }).finally(() => {
@@ -120,13 +144,13 @@ export default class AvailableProducts extends LightningElement {
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
                 variant: 'error',
-                title: "Error",
+                title: FAIL_MESSAGE_TITLE,
                 message: errorMessage
             }));
         }).finally(() => {
             this.isLoading = false;
             this.template.querySelector('lightning-datatable').isLoading = false;
-            this.loadMoreStatus = ''; // TODO : Custom Label
+            this.loadMoreStatus = '';
         })
     }
 
@@ -157,7 +181,7 @@ export default class AvailableProducts extends LightningElement {
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
                 variant: 'error',
-                title: "Error",
+                title: FAIL_MESSAGE_TITLE,
                 message: errorMessage
             }));
         }).finally(() => {
@@ -180,7 +204,7 @@ export default class AvailableProducts extends LightningElement {
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
                 variant: 'error',
-                title: "Error",
+                title: FAIL_MESSAGE_TITLE,
                 message: errorMessage
             }));
         }).finally(() => {
@@ -231,7 +255,7 @@ export default class AvailableProducts extends LightningElement {
                     this.showedProductIds.push(item.Product2Id);
                 })
                 this.template.querySelector('lightning-datatable').isLoading = true;
-                this.loadMoreStatus = 'Loading...'; // TODO : Custom Label
+                this.loadMoreStatus = LOADING_LABEL;
                 this.loadProductList();
             }
         }

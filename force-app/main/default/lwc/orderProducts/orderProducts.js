@@ -11,11 +11,42 @@ import {subscribe, MessageContext} from 'lightning/messageService';
 import ORDER_ITEM_UPSERT_CHANNEL from '@salesforce/messageChannel/OrderItemUpsert__c';
 import {getRecord} from 'lightning/uiRecordApi';
 
+import ORDER_ITEM_PRODUCT_NAME_FIELD_NAME from '@salesforce/label/c.OrderItemProductNameColumn';
+import ORDER_ITEM_UNIT_PRICE_FIELD_NAME from '@salesforce/label/c.OrderItemUnitPriceColumnName';
+import ORDER_ITEM_QUANTITY_FIELD_NAME from '@salesforce/label/c.OrderItemQuantityColumnName';
+import ORDER_ITEM_TOTAL_PRICE_FIELD_NAME from '@salesforce/label/c.OrderItemTotalPriceColumnName';
+import CARD_LABEL from '@salesforce/label/c.OrderProductsCardLabel';
+import ACTIVATE_BUTTON_LABEL from '@salesforce/label/c.OrderProductsActivateButtonLabel';
+
+import SUCCESS_MESSAGE_TITLE from '@salesforce/label/c.ShowToastEventSuccessMessageTitle';
+import FAIL_MESSAGE_TITLE from '@salesforce/label/c.ShowToastEventFailMessageTitle';
+import LOADING_LABEL from '@salesforce/label/c.OrderProductsSpinnerLoadingLabel';
+
 const COLUMNS = [
-    {label: 'Name', fieldName: 'ProductName', cellAttributes: {alignment: 'left'}},
-    {label: 'Unit Price', fieldName: 'UnitPrice', type: 'currency', cellAttributes: {alignment: 'left'}},
-    {label: 'Quantity', fieldName: 'Quantity', type: 'number', cellAttributes: {alignment: 'left'}},
-    {label: 'Total Price', fieldName: 'TotalPrice', type: 'currency', cellAttributes: {alignment: 'left'}},
+    {
+        label: ORDER_ITEM_PRODUCT_NAME_FIELD_NAME,
+        fieldName: 'ProductName',
+        type: 'text',
+        cellAttributes: {alignment: 'left'}
+    },
+    {
+        label: ORDER_ITEM_UNIT_PRICE_FIELD_NAME,
+        fieldName: 'UnitPrice',
+        type: 'currency',
+        cellAttributes: {alignment: 'left'}
+    },
+    {
+        label: ORDER_ITEM_QUANTITY_FIELD_NAME,
+        fieldName: 'Quantity',
+        type: 'number',
+        cellAttributes: {alignment: 'left'}
+    },
+    {
+        label: ORDER_ITEM_TOTAL_PRICE_FIELD_NAME,
+        fieldName: 'TotalPrice',
+        type: 'currency',
+        cellAttributes: {alignment: 'left'}
+    },
 ]
 
 const ORDER_FIELDS = ['Order.Status'];
@@ -28,15 +59,16 @@ export default class OrderProducts extends LightningElement {
     orderItems = [];
     subscription = null;
     order;
+    cardLabel = CARD_LABEL;
+    activateButtonLabel = ACTIVATE_BUTTON_LABEL;
 
     @wire(getRecord, {recordId: '$recordId', fields: ORDER_FIELDS})
     wiredRecord({error, data}) {
         if (error) {
             const errorMessage = getErrorMessage(error);
-            // TODO: Custom Label
             this.dispatchEvent(
                 new ShowToastEvent({
-                    title: 'Error loading order',
+                    title: FAIL_MESSAGE_TITLE,
                     errorMessage,
                     variant: 'error',
                 }),
@@ -75,15 +107,14 @@ export default class OrderProducts extends LightningElement {
             eval("$A.get('e.force:refreshView').fire();");
             this.dispatchEvent(new ShowToastEvent({
                 variant: data.isSuccess ? 'success' : 'error',
-                title: data.isSuccess ? 'Success' : 'Fail',
+                title: data.isSuccess ? SUCCESS_MESSAGE_TITLE : FAIL_MESSAGE_TITLE,
                 message: data.message
             }));
         }).catch(error => {
-            // TODO : Custom Label
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
                 variant: 'error',
-                title: "Error",
+                title: FAIL_MESSAGE_TITLE,
                 message: errorMessage
             }));
         }).finally(() => {
@@ -102,11 +133,10 @@ export default class OrderProducts extends LightningElement {
             });
             this.orderItems = clone;
         }).catch(error => {
-            // TODO : Custom Label
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
                 variant: 'error',
-                title: "Error",
+                title: FAIL_MESSAGE_TITLE,
                 message: errorMessage
             }));
         }).finally(() => {
