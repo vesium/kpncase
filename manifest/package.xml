@@ -4,6 +4,7 @@
         <members>OrderProductController</members>
         <members>AvailableProductsController</members>
         <members>OrderService</members>
+        <members>AvailableProductsControllerTest</members>
         <name>ApexClass</name>
     </types>
     <types>
