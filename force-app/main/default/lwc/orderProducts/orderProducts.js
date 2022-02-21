@@ -148,5 +148,9 @@ export default class OrderProducts extends LightningElement {
         return this?.order?.fields?.Status?.value === 'Activated';
     }
 
+    get activateButtonClass() {
+        return this.orderItems.length === 0 ? 'slds-hide' : '';
+    }
+
 
 }
