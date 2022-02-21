@@ -5,6 +5,9 @@
         <members>AvailableProductsController</members>
         <members>OrderService</members>
         <members>AvailableProductsControllerTest</members>
+        <members>OrderProductControllerTest</members>
+        <members>RESTMockServiceResponseGenerator</members>
+        <members>TestDataFactory</members>
         <name>ApexClass</name>
     </types>
     <types>
