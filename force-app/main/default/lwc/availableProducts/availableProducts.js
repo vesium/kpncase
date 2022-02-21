@@ -75,7 +75,7 @@ export default class AvailableProducts extends LightningElement {
             orderId: this.recordId
         }).then(order => {
             this.order = order;
-            this.isPriceBookSelectionAvailable = this.order.Pricebook2Id === null;
+            this.isPriceBookSelectionAvailable = this?.order?.Pricebook2Id === undefined;
             if (this.isPriceBookSelectionAvailable === false) {
                 return Promise.resolve();
             } else {
@@ -139,17 +139,16 @@ export default class AvailableProducts extends LightningElement {
             selectedPriceBook2Id: this.selectedPriceBookId
         }).then(data => {
             // Get Available Products By Selected Price Book
-            return getAvailableProducts({
+            return getAvailableProductList({
                 productSearchRequestModel: {
                     orderId: this.recordId,
-                    searchTerm: "", // TODO
-                    offset: this.offset,
-                    recordLimit: RECORD_LIMIT
+                    recordLimit: RECORD_LIMIT,
+                    showedProductIds: this.showedProductIds
                 }
             })
         }).then(data => {
             this.showPriceBookSelectionLayout = false;
-            this.prepareProductList(data);
+            this.prepareProductListToDataTable(data);
         }).catch(error => {
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
@@ -188,16 +187,6 @@ export default class AvailableProducts extends LightningElement {
         this.selectedRows = event.detail.selectedRows;
     }
 
-    prepareProductList(data) {
-        this.showProductListDataTable = true;
-        this.totalRecordSize = data.totalRecordSize;
-        this.totalOrderItemSize = data.totalOrderItemSize;
-        if (this.productList.length > 0) {
-            this.productList = [...this.productList, ...data.entries];
-        } else {
-            this.productList = data.entries;
-        }
-    }
 
     preparePricePriceBookOptions(data) {
         this.showPriceBookSelectionLayout = true;
