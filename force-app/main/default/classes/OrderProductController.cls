@@ -30,8 +30,17 @@ public with sharing class OrderProductController {
     }
 
     @AuraEnabled
-    public static void activateOrder(Id orderId) {
+    public static OrderActivationResult activateOrder(Id orderId) {
+
         OrderService.OrderServiceIntegrationResult orderServiceIntegrationResult = OrderService.sendOrderToExternalSystem(orderId);
+
+        OrderActivationResult orderActivationResult = new OrderActivationResult();
+        orderActivationResult.message = orderServiceIntegrationResult.message;
+        orderActivationResult.isSuccess = orderServiceIntegrationResult.isSuccess;
+        if (orderActivationResult.isSuccess) {
+            orderActivationResult.message = 'The order has been activated';
+        }
+
         Order order = new Order(Id = orderId);
         if (orderServiceIntegrationResult.isSuccess) {
             order.Status = 'Activated';
@@ -40,8 +49,15 @@ public with sharing class OrderProductController {
         } else {
             order.IntegrationStatus__c = 'Fail';
             update order;
-            throw new AuraHandledException(orderServiceIntegrationResult.message);
         }
+
+        return orderActivationResult;
+
+    }
+
+    class OrderActivationResult {
+        @AuraEnabled public Boolean isSuccess { get; set; }
+        @AuraEnabled public String message { get; set; }
     }
 
 

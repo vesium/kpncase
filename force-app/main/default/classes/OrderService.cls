@@ -48,7 +48,6 @@ public with sharing class OrderService {
             httpRequest.setBody(JSON.serializePretty(orderRequestModel));
             HttpResponse httpResponse = http.send(httpRequest);
 
-
             if (httpResponse.getStatusCode() == 200) {
                 integrationResult.isSuccess = true;
                 integrationResult.message = 'Integration has been completed successfully!';
@@ -56,6 +55,7 @@ public with sharing class OrderService {
                 String errorMessage = 'An error has occurred while sending the order.';
                 throw new OrderServiceWebServiceException(errorMessage);
             }
+
         } catch (Exception ex) {
             System.debug(ex.getMessage());
             System.debug(ex.getStackTraceString());

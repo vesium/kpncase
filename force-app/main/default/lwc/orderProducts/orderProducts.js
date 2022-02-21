@@ -74,9 +74,9 @@ export default class OrderProducts extends LightningElement {
         }).then(data => {
             eval("$A.get('e.force:refreshView').fire();");
             this.dispatchEvent(new ShowToastEvent({
-                variant: 'success',
-                title: "Success",
-                message: "The order has been activated"
+                variant: data.isSuccess ? 'success' : 'error',
+                title: data.isSuccess ? 'Success' : 'Fail',
+                message: data.message
             }));
         }).catch(error => {
             // TODO : Custom Label
