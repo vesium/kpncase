@@ -3,6 +3,7 @@
     <types>
         <members>OrderProductController</members>
         <members>AvailableProductsController</members>
+        <members>OrderService</members>
         <name>ApexClass</name>
     </types>
     <types>
