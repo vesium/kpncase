@@ -5,7 +5,7 @@
 public with sharing class AvailableProductsController {
 
     @AuraEnabled
-    public static AvailableProductListResult getAvailableProductLast(ProductSearchRequestModel productSearchRequestModel) {
+    public static AvailableProductListResult getAvailableProductList(ProductSearchRequestModel productSearchRequestModel) {
 
         Integer recordLimit = productSearchRequestModel.recordLimit;
 

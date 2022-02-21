@@ -3,7 +3,7 @@
  */
 
 import {api, LightningElement, track, wire} from 'lwc';
-import getAvailableProductLast from '@salesforce/apex/AvailableProductsController.getAvailableProductLast';
+import getAvailableProductList from '@salesforce/apex/AvailableProductsController.getAvailableProductList';
 import getPriceBooks from '@salesforce/apex/AvailableProductsController.getPriceBooks';
 import getOrder
     from '@salesforce/apex/AvailableProductsController.getOrder';
@@ -17,7 +17,6 @@ import ORDER_ITEM_UPSERT_CHANNEL from '@salesforce/messageChannel/OrderItemUpser
 const COLUMNS = [
     {label: 'Name', fieldName: 'Name', cellAttributes: {alignment: 'left'}},
     {label: 'List Price', fieldName: 'UnitPrice', type: 'currency', cellAttributes: {alignment: 'left'}},
-    {label: 'PriceBook2Id', fieldName: 'Pricebook2Id', type: 'text', cellAttributes: {alignment: 'left'}},
 ]
 const RECORD_LIMIT = 5;
 
@@ -106,7 +105,7 @@ export default class AvailableProducts extends LightningElement {
     loadProductList() {
         this.showProductListDataTable = true;
         this.isLoading = true;
-        getAvailableProductLast({
+        getAvailableProductList({
             productSearchRequestModel: {
                 orderId: this.recordId,
                 recordLimit: RECORD_LIMIT,
@@ -248,6 +247,7 @@ export default class AvailableProducts extends LightningElement {
             } else {
                 this.productList = data.entries;
             }
+            this.productList = [...new Map(this.productList.map(item => [item["Id"], item])).values()];
         }
     }
 
