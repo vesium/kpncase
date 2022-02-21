@@ -3,7 +3,7 @@
  */
 
 import {api, LightningElement, track, wire} from 'lwc';
-import getAvailableProducts from '@salesforce/apex/AvailableProductsController.getAvailableProducts';
+import getAvailableProductLast from '@salesforce/apex/AvailableProductsController.getAvailableProductLast';
 import getPriceBooks from '@salesforce/apex/AvailableProductsController.getPriceBooks';
 import getOrder
     from '@salesforce/apex/AvailableProductsController.getOrder';
@@ -17,7 +17,9 @@ import ORDER_ITEM_UPSERT_CHANNEL from '@salesforce/messageChannel/OrderItemUpser
 const COLUMNS = [
     {label: 'Name', fieldName: 'Name', cellAttributes: {alignment: 'left'}},
     {label: 'List Price', fieldName: 'UnitPrice', type: 'currency', cellAttributes: {alignment: 'left'}},
+    {label: 'PriceBook2Id', fieldName: 'Pricebook2Id', type: 'text', cellAttributes: {alignment: 'left'}},
 ]
+const RECORD_LIMIT = 5;
 
 export default class AvailableProducts extends LightningElement {
 
@@ -32,6 +34,9 @@ export default class AvailableProducts extends LightningElement {
     offset = 0;
     loadMoreStatus = '';
     totalRecordSize = null;
+    existingPriceBookEntries = [];
+    newPriceBookEntries = [];
+    showedProductIds = [];
 
     isPriceBookSelectionAvailable = false;
     showProductListButton = false;
@@ -65,7 +70,7 @@ export default class AvailableProducts extends LightningElement {
         return this.selectedRows.length === 0;
     }
 
-    handleShowProductList() {
+    connectedCallback() {
         this.isLoading = true;
         getOrder({
             orderId: this.recordId
@@ -73,23 +78,13 @@ export default class AvailableProducts extends LightningElement {
             this.order = order;
             this.isPriceBookSelectionAvailable = this.order.Pricebook2Id === null;
             if (this.isPriceBookSelectionAvailable === false) {
-                // Get Available Products
-                return getAvailableProducts({
-                    productSearchRequestModel: {
-                        orderId: this.recordId,
-                        searchTerm: "", // TODO
-                        offset: this.offset
-                    }
-                })
+                return Promise.resolve();
             } else {
                 // Get Price Book List
                 return getPriceBooks({});
             }
         }).then(data => {
-            this.showProductListButton = true;
-            if (this.isPriceBookSelectionAvailable === false) {
-                this.prepareProductList(data);
-            } else {
+            if (this.isPriceBookSelectionAvailable === true) {
                 this.preparePricePriceBookOptions(data);
             }
         }).catch(error => {
@@ -104,7 +99,37 @@ export default class AvailableProducts extends LightningElement {
         })
     }
 
+    handleShowProductList() {
+        this.loadProductList();
+    }
+
+    loadProductList() {
+        this.showProductListDataTable = true;
+        this.isLoading = true;
+        getAvailableProductLast({
+            productSearchRequestModel: {
+                orderId: this.recordId,
+                recordLimit: RECORD_LIMIT,
+                showedProductIds: this.showedProductIds
+            }
+        }).then(data => {
+            this.addProductListToTable(data);
+        }).catch(error => {
+            const errorMessage = getErrorMessage(error);
+            this.dispatchEvent(new ShowToastEvent({
+                variant: 'error',
+                title: "Error",
+                message: errorMessage
+            }));
+        }).finally(() => {
+            this.isLoading = false;
+            this.template.querySelector('lightning-datatable').isLoading = false;
+            this.loadMoreStatus = ''; // TODO : Custom Label
+        })
+    }
+
     handleHideProductList() {
+        this.productList = [];
         this.showProductListButton = false;
     }
 
@@ -119,7 +144,8 @@ export default class AvailableProducts extends LightningElement {
                 productSearchRequestModel: {
                     orderId: this.recordId,
                     searchTerm: "", // TODO
-                    offset: this.offset
+                    offset: this.offset,
+                    recordLimit: RECORD_LIMIT
                 }
             })
         }).then(data => {
@@ -139,9 +165,6 @@ export default class AvailableProducts extends LightningElement {
 
     handleAddProduct() {
         this.isLoading = true;
-        this.selectedRows.forEach(item => {
-            delete item.isExistingOrderProduct;
-        });
         updateOrderItems({
             orderId: this.recordId,
             selectedRows: this.selectedRows
@@ -166,47 +189,14 @@ export default class AvailableProducts extends LightningElement {
         this.selectedRows = event.detail.selectedRows;
     }
 
-    getAvailableProducts() {
-        this.template.querySelector('lightning-datatable').isLoading = true;
-        this.loadMoreStatus = 'Loading...'; // TODO : Custom Label
-        getAvailableProducts({
-            productSearchRequestModel: {
-                orderId: this.recordId,
-                searchTerm: "", // TODO,
-                offset: this.offset
-            }
-        }).then(data => {
-            this.prepareProductList(data);
-        }).catch(error => {
-            const errorMessage = getErrorMessage(error);
-            this.dispatchEvent(new ShowToastEvent({
-                variant: 'error',
-                title: "Error", // TODO : Custom Label
-                message: errorMessage
-            }));
-        }).finally(() => {
-            this.template.querySelector('lightning-datatable').isLoading = false;
-            this.loadMoreStatus = '';
-        })
-    }
-
     prepareProductList(data) {
         this.showProductListDataTable = true;
-        const clone = JSON.parse(JSON.stringify(data));
-        this.totalRecordSize = clone.totalRecordSize;
-        const newItems = clone.entries.map((item) => {
-            return {
-                Id: item.pricebookEntry.Id,
-                Product2Id: item.pricebookEntry.Product2Id,
-                Name: item.pricebookEntry.Name,
-                UnitPrice: item.pricebookEntry.UnitPrice,
-                isExistingOrderProduct: item.isExistingOrderProduct
-            }
-        });
+        this.totalRecordSize = data.totalRecordSize;
+        this.totalOrderItemSize = data.totalOrderItemSize;
         if (this.productList.length > 0) {
-            this.productList = [...this.productList, ...newItems];
+            this.productList = [...this.productList, ...data.entries];
         } else {
-            this.productList = newItems;
+            this.productList = data.entries;
         }
     }
 
@@ -224,20 +214,42 @@ export default class AvailableProducts extends LightningElement {
         this.selectedPriceBookId = event.detail.value;
     }
 
+
     handleLoadMore(event) {
         event.preventDefault();
         if (this.productList.length === 2000) {
             this.template.querySelector('lightning-datatable').enableInfiniteLoading = false;
             this.loadMoreStatus = 'We currently do not support viewing more than 2000 records in a list'
         } else {
-            this.offset = this.offset + 50; // TODO:
             if (this.totalRecordSize === this.productList.length) {
                 this.template.querySelector('lightning-datatable').enableInfiniteLoading = false;
                 this.loadMoreStatus = 'No data to load more'
+            } else if (this.totalRecordSize > this.productList.length) {
+                this.showedProductIds = [];
+                this.productList.forEach(item => {
+                    this.showedProductIds.push(item.Product2Id);
+                })
+                this.template.querySelector('lightning-datatable').isLoading = true;
+                this.loadMoreStatus = 'Loading...'; // TODO : Custom Label
+                this.loadProductList();
+            }
+        }
+
+
+    }
+
+    addProductListToTable(data) {
+        this.showProductListButton = true;
+        this.showProductListDataTable = true;
+        this.totalRecordSize = data.totalRecordSize;
+        if (data.entries.length > 0) {
+            if (this.productList.length > 0) {
+                this.productList = [...this.productList, ...data.entries];
             } else {
-                this.getAvailableProducts();
+                this.productList = data.entries;
             }
         }
     }
+
 
 }
