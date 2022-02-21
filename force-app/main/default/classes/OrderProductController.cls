@@ -55,7 +55,7 @@ public with sharing class OrderProductController {
 
     }
 
-    class OrderActivationResult {
+    public class OrderActivationResult {
         @AuraEnabled public Boolean isSuccess { get; set; }
         @AuraEnabled public String message { get; set; }
     }
