@@ -18,7 +18,7 @@ const COLUMNS = [
     {label: 'Name', fieldName: 'Name', cellAttributes: {alignment: 'left'}},
     {label: 'List Price', fieldName: 'UnitPrice', type: 'currency', cellAttributes: {alignment: 'left'}},
 ]
-const RECORD_LIMIT = 5;
+const RECORD_LIMIT = 10;
 
 export default class AvailableProducts extends LightningElement {
 
@@ -30,11 +30,8 @@ export default class AvailableProducts extends LightningElement {
     selectedPriceBookId = null;
     selectedRows = [];
     order;
-    offset = 0;
     loadMoreStatus = '';
     totalRecordSize = null;
-    existingPriceBookEntries = [];
-    newPriceBookEntries = [];
     showedProductIds = [];
 
     isPriceBookSelectionAvailable = false;
@@ -69,7 +66,8 @@ export default class AvailableProducts extends LightningElement {
         return this.selectedRows.length === 0;
     }
 
-    connectedCallback() {
+    handleShowProductList() {
+        this.showProductListButton = true;
         this.isLoading = true;
         getOrder({
             orderId: this.recordId
@@ -77,7 +75,13 @@ export default class AvailableProducts extends LightningElement {
             this.order = order;
             this.isPriceBookSelectionAvailable = this?.order?.Pricebook2Id === undefined;
             if (this.isPriceBookSelectionAvailable === false) {
-                return Promise.resolve();
+                return getAvailableProductList({
+                    productSearchRequestModel: {
+                        orderId: this.recordId,
+                        recordLimit: RECORD_LIMIT,
+                        showedProductIds: this.showedProductIds
+                    }
+                });
             } else {
                 // Get Price Book List
                 return getPriceBooks({});
@@ -85,6 +89,8 @@ export default class AvailableProducts extends LightningElement {
         }).then(data => {
             if (this.isPriceBookSelectionAvailable === true) {
                 this.preparePricePriceBookOptions(data);
+            } else {
+                this.prepareProductListToDataTable(data);
             }
         }).catch(error => {
             const errorMessage = getErrorMessage(error);
@@ -96,10 +102,7 @@ export default class AvailableProducts extends LightningElement {
         }).finally(() => {
             this.isLoading = false;
         })
-    }
 
-    handleShowProductList() {
-        this.loadProductList();
     }
 
     loadProductList() {
@@ -129,6 +132,7 @@ export default class AvailableProducts extends LightningElement {
 
     handleHideProductList() {
         this.productList = [];
+        this.showPriceBookSelectionLayout = false;
         this.showProductListButton = false;
     }
 
@@ -171,6 +175,7 @@ export default class AvailableProducts extends LightningElement {
             this.template.querySelector('lightning-datatable').selectedRows = [];
             const payload = {};
             publish(this.messageContext, ORDER_ITEM_UPSERT_CHANNEL, payload);
+            this.refreshAvailableProductList();
         }).catch(error => {
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
@@ -185,6 +190,14 @@ export default class AvailableProducts extends LightningElement {
 
     handleRowSelection(event) {
         this.selectedRows = event.detail.selectedRows;
+    }
+
+    refreshAvailableProductList() {
+        this.showProductListDataTable = false;
+        this.productList = [];
+        this.showedProductIds = [];
+        this.template.querySelector('lightning-datatable').enableInfiniteLoading = true;
+        this.loadProductList();
     }
 
 
