@@ -13,7 +13,6 @@
     <types>
         <members>orderProducts</members>
         <members>utility</members>
-        <members>wrapperComponent</members>
         <members>availableProducts</members>
         <name>LightningComponentBundle</name>
     </types>
