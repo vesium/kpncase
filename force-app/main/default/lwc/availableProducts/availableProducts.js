@@ -112,7 +112,7 @@ export default class AvailableProducts extends LightningElement {
                 showedProductIds: this.showedProductIds
             }
         }).then(data => {
-            this.addProductListToTable(data);
+            this.prepareProductListToDataTable(data);
         }).catch(error => {
             const errorMessage = getErrorMessage(error);
             this.dispatchEvent(new ShowToastEvent({
@@ -237,7 +237,7 @@ export default class AvailableProducts extends LightningElement {
 
     }
 
-    addProductListToTable(data) {
+    prepareProductListToDataTable(data) {
         this.showProductListButton = true;
         this.showProductListDataTable = true;
         this.totalRecordSize = data.totalRecordSize;
